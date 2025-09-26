@@ -1,3 +1,4 @@
+from email import message
 import os
 import sqlite3
 import random
@@ -32,15 +33,22 @@ dp.include_router(router)
 @router.message(CommandStart())
 async def start_cmd(message: types.Message):
     ensure_user(message.from_user.id)
-    await message.answer("Добро пожаловать в Rake Case! Открой мини-приложение!")
-        
-keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[[
-            InlineKeyboardButton(
-                text="🔥 Фармить",
-                web_app=WebAppInfo(url="https://lakeclicker.vercel.app")
-            )
-        ]]
+
+    web_app_url = "https://rake-case.vercel.app"  # <- обязательно с http(s)://
+    keyboard_dict = {
+        "inline_keyboard": [
+            [
+                {
+                    "text": "🔥 Открывать кейсы",
+                    "web_app": {"url": web_app_url}
+                }
+            ]
+        ]
+    }
+
+    await message.answer(
+        "🎁 Привет, крути кейсы и получай NFT-подарки!",
+        reply_markup=keyboard_dict
     )
 
 # --- Веб-сервер ---
