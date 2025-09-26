@@ -1,0 +1,312 @@
+<!-- FILE: index.html -->
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>rake case — Mini App</title>
+  <meta name="theme-color" content="#0b1220">
+  <style>
+    /* ====== Reset & Vars ====== */
+    :root{
+      --bg:#071029;
+      --card:#081426;
+      --muted:#9fb1c8;
+      --accent:#6ee7b7;
+      --accent-2:#8b5cf6;
+      --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
+      --danger: #ff6b6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#030417 0%,var(--bg) 100%);color:#e6f0f8}
+
+    /* ====== App ====== */
+    .app{width:980px;max-width:100%;margin:20px auto;padding:18px}
+    .top{display:flex;justify-content:space-between;align-items:center}
+    .logo{font-weight:800;font-size:20px;color:var(--accent-2)}
+    .logo span{color:var(--accent)}
+    .balance{background:linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));padding:8px 12px;border-radius:12px;font-weight:600}
+
+    main{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
+
+    /* Left column */
+    .left{display:flex;flex-direction:column;gap:12px}
+    .cards{display:flex;gap:12px}
+    .case-card{flex:1;display:flex;flex-direction:column;align-items:center;padding:16px;border-radius:14px;background:linear-gradient(180deg,var(--glass),var(--glass-2));box-shadow:0 8px 30px rgba(6,10,20,0.6);transition:transform .22s,box-shadow .22s}
+    .case-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,0,0,0.6)}
+    .case-card img{width:140px;height:120px;object-fit:contain}
+    .case-name{font-size:18px;margin-top:10px}
+    .case-price{margin-top:6px;color:var(--muted)}
+    .open-btn{margin-top:12px;padding:10px 16px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#041022;font-weight:700;cursor:pointer}
+
+    /* Right column */
+    .right{display:flex;flex-direction:column;gap:12px}
+    .panel{background:var(--card);padding:12px;border-radius:12px}
+    .tabs{display:flex;gap:8px}
+    .tab{flex:1;padding:8px 10px;border-radius:10px;text-align:center;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.03)}
+    .tab.active{background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));box-shadow:0 8px 20px rgba(16,24,40,0.6)}
+
+    .inventory-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+    .item{padding:8px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));display:flex;gap:8px;align-items:center}
+    .rarity-common{border-left:4px solid #94a3b8}
+    .rarity-rare{border-left:4px solid #60a5fa}
+    .rarity-epic{border-left:4px solid #c084fc}
+    .rarity-legend{border-left:4px solid #f59e0b}
+
+    /* Reveal modal */
+    .reveal-wrap{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;background:rgba(3,6,12,0.6);backdrop-filter:blur(4px);padding:18px;z-index:60}
+    .reveal{width:min(540px,96%);background:linear-gradient(180deg,#071428,#071428);border-radius:16px;padding:18px;box-shadow:0 30px 80px rgba(2,6,23,0.8);text-align:center}
+    .reel{display:flex;overflow:hidden;justify-content:center;gap:12px;padding:12px}
+    .reel .slot{width:120px;height:120px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700}
+    .result{margin-top:12px;font-size:18px}
+    .close-btn{margin-top:14px;padding:8px 12px;border-radius:10px;border:0;background:rgba(255,255,255,0.04);color:#fff;cursor:pointer}
+
+    /* small screens */
+    @media (max-width:900px){
+      main{grid-template-columns:1fr;}
+      .right{order:2}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="top">
+      <div class="logo">rake <span>case</span></div>
+      <div class="balance" id="balance">Баланс: — ⭐</div>
+    </div>
+
+    <main>
+      <div class="left">
+        <div style="display:flex;gap:12px;">
+          <div class="case-card" data-id="basic" data-price="10">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='220'><rect rx='16' width='100%' height='100%' fill='%230b1220'/><text x='50%' y='55%' fill='%23fff' font-size='30' font-family='Arial' text-anchor='middle'>Basic</text></svg>" alt="basic case">
+            <div class="case-name">Обычный кейс</div>
+            <div class="case-price">Открытие — 10⭐</div>
+            <button class="open-btn" onclick="openCase('basic')">Открыть</button>
+          </div>
+
+          <div class="case-card" data-id="premium" data-price="30">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='220'><rect rx='16' width='100%' height='100%' fill='%230b1220'/><text x='50%' y='55%' fill='%23fff' font-size='28' font-family='Arial' text-anchor='middle'>Premium</text></svg>" alt="premium case">
+            <div class="case-name">Премиум кейс</div>
+            <div class="case-price">Открытие — 30⭐</div>
+            <button class="open-btn" onclick="openCase('premium')">Открыть</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Последние открытия</h3>
+          <div id="recent" style="margin-top:8px;color:var(--muted)">Пока нет</div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>Управление</strong>
+            <div style="display:flex;gap:8px">
+              <button id="btn-topup" class="tab">Пополнить</button>
+              <button id="btn-invite" class="tab">Поделиться</button>
+            </div>
+          </div>
+
+          <div class="tabs" style="margin-top:12px">
+            <div class="tab active" id="tab-cases">Кейсы</div>
+            <div class="tab" id="tab-inv">Инвентарь</div>
+          </div>
+
+          <div id="panel-cases" style="margin-top:12px">
+            <p class="muted">Выберите кейс слева и откройте его.</p>
+          </div>
+
+          <div id="panel-inv" style="display:none;margin-top:12px">
+            <div class="inventory-list" id="inventory">
+              <div style="color:var(--muted)">Пусто</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="text-align:center">
+          <small style="color:var(--muted)">Работает как Telegram Web App. В продакшне — проверяйте подпись initData и используйте Telegram Payments для реальных Stars.</small>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Reveal modal (hidden by default) -->
+  <div id="revealWrap" class="reveal-wrap" style="display:none">
+    <div class="reveal">
+      <div class="reel" id="reel"></div>
+      <div class="result" id="revealResult">Готово</div>
+      <button class="close-btn" id="closeReveal">Закрыть</button>
+    </div>
+  </div>
+
+  <script>
+    // Simple frontend logic for Rake Case
+    // NOTE: This demo assumes backend endpoints: /api/me, /api/topup, /api/open, /api/inventory
+    // In production verify Telegram initData signature on server side.
+
+    const API = {
+      me: '/api/me',
+      topup: '/api/topup',
+      open: '/api/open',
+      inv: '/api/gifts'
+    };
+
+    // util
+    const el = id => document.getElementById(id);
+
+    async function fetchJSON(url, opts){
+      try{
+        const res = await fetch(url, opts);
+        return await res.json();
+      }catch(e){
+        console.error('fetch error', e);
+        return null;
+      }
+    }
+
+    async function refreshBalance(){
+      const r = await fetchJSON(API.me);
+      if(r && typeof r.balance !== 'undefined'){
+        document.getElementById('balance').innerText = `Баланс: ${r.balance} ⭐`;
+      }else{
+        document.getElementById('balance').innerText = 'Баланс: — ⭐';
+      }
+    }
+
+    async function refreshInventory(){
+      const r = await fetchJSON(API.inv);
+      const wrap = document.getElementById('inventory');
+      wrap.innerHTML = '';
+      if(r && Array.isArray(r.gifts) && r.gifts.length){
+        r.gifts.slice().reverse().forEach(g => {
+          const div = document.createElement('div');
+          div.className = 'item ' + rarityClass(g);
+          div.innerHTML = `<div style="flex:1">${escapeHtml(g)}</div><div style="opacity:.8;color:var(--muted)">${rarityLabel(g)}</div>`;
+          wrap.appendChild(div);
+        });
+      } else {
+        wrap.innerHTML = '<div style="color:var(--muted)">Пусто</div>';
+      }
+    }
+
+    function rarityClass(name){
+      if(/легенд/i.test(name)) return 'rarity-legend';
+      if(/эпик/i.test(name)) return 'rarity-epic';
+      if(/редк/i.test(name)) return 'rarity-rare';
+      return 'rarity-common';
+    }
+    function rarityLabel(name){
+      if(/легенд/i.test(name)) return 'Легендарное';
+      if(/эпик/i.test(name)) return 'Эпическое';
+      if(/редк/i.test(name)) return 'Редкое';
+      return 'Обычное';
+    }
+    function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+    // Open case flow
+    async function openCase(caseId){
+      // determine price
+      const card = document.querySelector(`.case-card[data-id="${caseId}"]`);
+      const price = parseInt(card.getAttribute('data-price')) || 10;
+
+      // call open endpoint
+      const res = await fetchJSON(API.open, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({case: caseId})});
+      if(!res){ alert('Ошибка сервера'); return; }
+      if(res.ok === false){ alert(res.message || 'Не удалось'); return; }
+
+      // show reveal animation
+      showReveal(res.gift || (res.message || 'Подарок'));
+      // update UI
+      await refreshBalance();
+      await refreshRecent(res.gift || res.message);
+      await refreshInventory();
+    }
+
+    function showReveal(gift){
+      const wrap = el('revealWrap');
+      const reel = el('reel');
+      const result = el('revealResult');
+      reel.innerHTML = '';
+      // build slots
+      for(let i=0;i<7;i++){
+        const s = document.createElement('div'); s.className='slot'; s.innerText='?'; reel.appendChild(s);
+      }
+      wrap.style.display='flex';
+      result.innerText='Открываем...';
+
+      // simple fake animation: shuffle then show gift
+      let i=0; const timer = setInterval(()=>{
+        const slots = reel.querySelectorAll('.slot');
+        slots.forEach((s,idx)=> s.innerText = sampleName(idx+i));
+        i++;
+      },80);
+
+      setTimeout(()=>{
+        clearInterval(timer);
+        // place gift in center slot
+        const slots = reel.querySelectorAll('.slot');
+        const center = Math.floor(slots.length/2);
+        slots.forEach((s,idx)=> s.innerText = (idx===center? gift : sampleName(idx)));
+        result.innerText = `Поздравляем! Вы получили: ${gift}`;
+      },1800);
+    }
+
+    function sampleName(i){
+      const arr = ['Обычный NFT','Редкий NFT','Эпик NFT','Легендарный NFT','Обычный NFT','Редкий NFT'];
+      return arr[i % arr.length];
+    }
+
+    // recent
+    async function refreshRecent(text){
+      const box = el('recent');
+      box.innerText = text || 'Пусто';
+    }
+
+    // tabs
+    document.getElementById('tab-cases').addEventListener('click', ()=>{switchTab('cases')});
+    document.getElementById('tab-inv').addEventListener('click', ()=>{switchTab('inv')});
+    function switchTab(t){
+      document.getElementById('tab-cases').classList.toggle('active', t==='cases');
+      document.getElementById('tab-inv').classList.toggle('active', t==='inv');
+      document.getElementById('panel-cases').style.display = (t==='cases')? 'block':'none';
+      document.getElementById('panel-inv').style.display = (t==='inv')? 'block':'none';
+      if(t==='inv') refreshInventory();
+    }
+
+    // wiring open buttons
+    window.openCase = openCase;
+
+    // topup (simulated) -> in production use Telegram Payments / server check
+    document.getElementById('btn-topup').addEventListener('click', async ()=>{
+      const res = await fetchJSON(API.topup, {method:'POST'});
+      if(res && res.ok){
+        await refreshBalance();
+        alert(res.message || 'Баланс пополнен');
+      } else alert('Ошибка пополнения');
+    });
+
+    // close reveal
+    document.getElementById('closeReveal').addEventListener('click', ()=>{ el('revealWrap').style.display='none'; });
+
+    // init: send initData to backend (server should verify signature)
+    (async function init(){
+      // if running inside Telegram Web App, initData is available via Telegram.WebApp.initData
+      try{
+        const tg = window.Telegram?.WebApp;
+        const initData = (tg && tg.initData)? tg.initData : '';
+        if(initData){
+          await fetch('/api/init',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({initData})});
+        }
+      }catch(e){console.warn('tg init error', e)}
+
+      await refreshBalance();
+      await refreshInventory();
+    })();
+  </script>
+</body>
+</html>
+
+<!-- END OF FILE -->

@@ -1,0 +1,10 @@
+:root {font-family: Inter, Arial, sans-serif;}
+body {background:#0f1724; color:#e6eef8; margin:0; padding:20px; display:flex; justify-content:center;}
+.app {width:420px;}
+header {display:flex; justify-content:space-between; align-items:center;}
+.card {background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-top:12px;}
+.controls button {margin-right:8px; padding:10px 12px; border-radius:8px; border:0; background:#1f2937; color:#fff; cursor:pointer;}
+.controls {margin-top:12px;}
+.case {display:flex; align-items:center;}
+.case img {width:72px; height:72px; margin-right:12px;}
+#output {min-height:48px;}
